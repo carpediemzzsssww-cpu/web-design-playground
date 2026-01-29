@@ -1,0 +1,1956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Design Playground</title>
+    <!-- Prism.js CSS - Low contrast theme -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #fafaf8;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f5f4f2;
+            --bg-code: #fbfbfa;
+            --text-primary: #1a1816;
+            --text-secondary: #5a5654;
+            --text-tertiary: #9e9b98;
+            --border-subtle: #e8e6e3;
+            --border-medium: #d4d1cd;
+            --accent: #6b6662;
+            --accent-light: #a39f9a;
+            --shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.03);
+            --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.05);
+            --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.06);
+            --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-base: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container { max-width: 1320px; margin: 0 auto; padding: 56px 40px 80px; }
+
+        header { margin-bottom: 40px; padding-bottom: 32px; border-bottom: 1px solid var(--border-subtle); }
+        h1 { font-size: 36px; font-weight: 600; letter-spacing: -0.025em; margin-bottom: 14px; }
+        .subtitle { font-size: 15px; line-height: 1.65; color: var(--text-secondary); max-width: 680px; }
+
+        /* Search */
+        .search-container { margin-bottom: 24px; }
+        .search-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px 16px;
+            font-size: 14px;
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: border-color var(--transition-fast);
+        }
+        .search-input:focus { outline: none; border-color: var(--accent-light); }
+        .search-input::placeholder { color: var(--text-tertiary); }
+
+        /* Filter Navigation */
+        .filter-nav { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 48px; }
+        .filter-btn {
+            padding: 8px 18px;
+            font-size: 14px;
+            border: 1px solid var(--border-medium);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        .filter-btn:hover { background: var(--bg-tertiary); border-color: var(--accent-light); color: var(--text-primary); }
+        .filter-btn.active { background: var(--text-primary); color: var(--bg-primary); border-color: var(--text-primary); }
+
+        /* Grid */
+        .components-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 24px;
+        }
+
+        /* Card */
+        .component-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 28px;
+            transition: all var(--transition-base);
+            cursor: pointer;
+        }
+        .component-card:hover { border-color: var(--border-medium); box-shadow: var(--shadow-soft); transform: translateY(-1px); }
+        .component-card.hidden { display: none; }
+        .card-title { font-size: 18px; font-weight: 500; margin-bottom: 10px; letter-spacing: -0.015em; }
+        .card-description { font-size: 14px; color: var(--text-secondary); margin-bottom: 18px; line-height: 1.55; }
+        .card-tags { display: flex; gap: 7px; flex-wrap: wrap; }
+        .tag { padding: 5px 11px; font-size: 12px; background: var(--bg-tertiary); color: var(--text-tertiary); border-radius: 5px; }
+
+        /* Empty State */
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-tertiary); }
+
+        /* Detail View */
+        .detail-view {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg-primary);
+            overflow-y: auto;
+            z-index: 1000;
+            animation: fadeIn 0.2s ease;
+        }
+        .detail-view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .detail-container { max-width: 1320px; margin: 0 auto; padding: 40px 40px 80px; }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 0;
+            margin-bottom: 32px;
+            font-size: 15px;
+            color: var(--text-secondary);
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: color var(--transition-fast);
+        }
+        .back-btn:hover { color: var(--text-primary); }
+        .back-btn::before { content: "←"; font-size: 18px; }
+
+        .detail-header { margin-bottom: 48px; padding-bottom: 32px; border-bottom: 1px solid var(--border-subtle); }
+        .detail-header h2 { font-size: 32px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 14px; }
+        .detail-description { font-size: 15px; color: var(--text-secondary); margin-bottom: 20px; }
+        .detail-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+        .detail-tag { padding: 6px 14px; font-size: 13px; background: var(--bg-tertiary); color: var(--text-secondary); border-radius: 6px; border: 1px solid var(--border-subtle); }
+
+        .detail-content { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+
+        .preview-section, .code-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .section-header { padding: 18px 24px; border-bottom: 1px solid var(--border-subtle); font-size: 14px; font-weight: 500; }
+
+        .preview-content {
+            padding: 60px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 280px;
+            background: var(--bg-tertiary);
+        }
+        .preview-content iframe { border: none; width: 100%; height: 240px; background: #fff; border-radius: 8px; }
+
+        .code-block { position: relative; }
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 24px;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .code-label { font-size: 12px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.03em; }
+        .copy-btn {
+            padding: 6px 14px;
+            font-size: 13px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-medium);
+            border-radius: 5px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        .copy-btn:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+        .copy-btn.copied { background: var(--text-primary); color: var(--bg-primary); border-color: var(--text-primary); }
+
+        .code-content { padding: 20px 24px; background: var(--bg-code); overflow-x: auto; max-height: 300px; }
+        .code-content pre { margin: 0; font-family: "SF Mono", Monaco, "Cascadia Code", monospace; font-size: 13px; line-height: 1.65; background: transparent !important; }
+        .code-content code { background: transparent !important; }
+
+        /* Prism.js override for low contrast */
+        .token.comment, .token.prolog, .token.doctype, .token.cdata { color: #9e9b98; }
+        .token.punctuation { color: #5a5654; }
+        .token.property, .token.tag, .token.boolean, .token.number, .token.constant, .token.symbol { color: #6b6662; }
+        .token.selector, .token.attr-name, .token.string, .token.char, .token.builtin { color: #736d68; }
+        .token.operator, .token.entity, .token.url, .token.variable { color: #5a5654; }
+        .token.atrule, .token.attr-value, .token.keyword { color: #5a5654; }
+        .token.function, .token.class-name { color: #4a4844; }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .detail-content { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .container, .detail-container { padding-left: 24px; padding-right: 24px; }
+            .components-grid { grid-template-columns: 1fr; }
+            h1 { font-size: 28px; }
+            .detail-header h2 { font-size: 26px; }
+            .search-input { max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Web Design Playground</h1>
+            <p class="subtitle">A small library of reusable UI effects for my personal site. Click any snippet to preview and copy.</p>
+        </header>
+
+        <div class="search-container">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search components...">
+        </div>
+
+        <nav class="filter-nav" id="filterNav"></nav>
+        <div class="components-grid" id="componentsGrid"></div>
+        <div class="empty-state" id="emptyState" style="display:none;">No components found.</div>
+    </div>
+
+    <div class="detail-view" id="detailView">
+        <div class="detail-container">
+            <button class="back-btn" onclick="hideDetail()">Back</button>
+            <div class="detail-header">
+                <h2 id="detailTitle"></h2>
+                <p class="detail-description" id="detailDescription"></p>
+                <div class="detail-tags" id="detailTags"></div>
+            </div>
+            <div class="detail-content">
+                <div class="preview-section">
+                    <div class="section-header">Preview</div>
+                    <div class="preview-content" id="previewContent"></div>
+                </div>
+                <div class="code-section" id="codeSection"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script>
+// Component Database
+const COMPONENTS = [
+  // Buttons & CTAs
+  {
+    slug: "button-glow-pill",
+    title: "Glow Pill Button",
+    description: "A soft glow pill button for portfolio CTA.",
+    category: "Buttons & CTAs",
+    tags: ["glow", "pill", "hover", "portfolio"],
+    html: `<button class="glow-btn">Get Started</button>`,
+    css: `.glow-btn {
+  padding: 12px 28px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+.glow-btn:hover {
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.6);
+  transform: translateY(-2px);
+}`
+  },
+  {
+    slug: "button-outline-hover",
+    title: "Outline Fill Button",
+    description: "Outline button with fill animation on hover.",
+    category: "Buttons & CTAs",
+    tags: ["outline", "hover", "fill", "animation"],
+    html: `<button class="outline-btn">Learn More</button>`,
+    css: `.outline-btn {
+  padding: 12px 28px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #3b82f6;
+  background: transparent;
+  border: 2px solid #3b82f6;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.outline-btn:hover {
+  color: #fff;
+  background: #3b82f6;
+}`
+  },
+  {
+    slug: "button-slide-arrow",
+    title: "Slide Arrow Button",
+    description: "Button with sliding arrow on hover.",
+    category: "Buttons & CTAs",
+    tags: ["arrow", "slide", "hover", "cta"],
+    html: `<button class="slide-arrow-btn">View Projects <span>&rarr;</span></button>`,
+    css: `.slide-arrow-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #111;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.slide-arrow-btn span { transition: transform 0.3s ease; }
+.slide-arrow-btn:hover { background: #e5e7eb; }
+.slide-arrow-btn:hover span { transform: translateX(4px); }`
+  },
+  {
+    slug: "button-shimmer",
+    title: "Shimmer Button",
+    description: "Button with animated shimmer effect.",
+    category: "Buttons & CTAs",
+    tags: ["shimmer", "animation", "premium", "cta"],
+    html: `<button class="shimmer-btn">Premium Access</button>`,
+    css: `.shimmer-btn {
+  position: relative;
+  padding: 14px 32px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(90deg, #1e3a8a, #3b82f6, #1e3a8a);
+  background-size: 200% 100%;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  animation: shimmer 2s linear infinite;
+}
+@keyframes shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}`
+  },
+  {
+    slug: "button-3d-press",
+    title: "3D Press Button",
+    description: "Button with 3D press effect on click.",
+    category: "Buttons & CTAs",
+    tags: ["3d", "press", "click", "depth"],
+    html: `<button class="press-btn">Click Me</button>`,
+    css: `.press-btn {
+  padding: 14px 28px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  background: #10b981;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 6px 0 #059669;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+.press-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 0 #059669;
+}
+.press-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #059669;
+}`
+  },
+  {
+    slug: "button-icon-circle",
+    title: "Icon Circle Button",
+    description: "Circular icon button for social links.",
+    category: "Buttons & CTAs",
+    tags: ["icon", "circle", "social", "minimal"],
+    html: `<button class="icon-btn">G</button>`,
+    css: `.icon-btn {
+  width: 44px;
+  height: 44px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #374151;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.icon-btn:hover {
+  color: #3b82f6;
+  border-color: #3b82f6;
+  transform: translateY(-2px);
+}`
+  },
+  {
+    slug: "button-underline-slide",
+    title: "Underline Slide Link",
+    description: "Text link with sliding underline effect.",
+    category: "Buttons & CTAs",
+    tags: ["link", "underline", "minimal", "text"],
+    html: `<a href="#" class="underline-link">Read more about me</a>`,
+    css: `.underline-link {
+  position: relative;
+  color: #111;
+  text-decoration: none;
+  font-weight: 500;
+}
+.underline-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0;
+  height: 2px;
+  background: #3b82f6;
+  transition: width 0.3s ease;
+}
+.underline-link:hover::after {
+  width: 100%;
+}`
+  },
+  {
+    slug: "button-magnetic",
+    title: "Magnetic Button",
+    description: "Button that follows cursor on hover.",
+    category: "Buttons & CTAs",
+    tags: ["magnetic", "interactive", "cursor", "js"],
+    html: `<button class="magnetic-btn" id="magBtn">Hover Me</button>`,
+    css: `.magnetic-btn {
+  padding: 16px 32px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  background: #111;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}`,
+    js: `const btn = document.getElementById('magBtn');
+btn.addEventListener('mousemove', (e) => {
+  const rect = btn.getBoundingClientRect();
+  const x = e.clientX - rect.left - rect.width / 2;
+  const y = e.clientY - rect.top - rect.height / 2;
+  btn.style.transform = \`translate(\${x * 0.3}px, \${y * 0.3}px)\`;
+});
+btn.addEventListener('mouseleave', () => {
+  btn.style.transform = 'translate(0, 0)';
+});`
+  },
+  {
+    slug: "butterfly-button",
+    title: "Butterfly Button",
+    description: "Restrained button with delicate hover transformation.",
+    category: "Buttons & CTAs",
+    tags: ["butterfly", "emergence", "minimal", "warm", "elegant"],
+    html: `<button class="bf-btn">Explore</button>`,
+    css: `.bf-btn {
+  position: relative;
+  padding: 14px 36px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #1a1a1a;
+  background: transparent;
+  border: 1px solid #d4cfc7;
+  cursor: pointer;
+  overflow: hidden;
+  transition: color 0.5s ease, border-color 0.5s ease;
+}
+.bf-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #1a1a1a;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: -1;
+}
+.bf-btn:hover { color: #f5f4f0; border-color: #1a1a1a; }
+.bf-btn:hover::before { transform: scaleX(1); transform-origin: left; }`
+  },
+  {
+    slug: "subtle-text-link",
+    title: "Subtle Text Link",
+    description: "Understated link with quiet underline reveal.",
+    category: "Buttons & CTAs",
+    tags: ["link", "subtle", "underline", "minimal", "butterfly"],
+    html: `<a href="#" class="subtle-link">View collection</a>`,
+    css: `.subtle-link {
+  position: relative;
+  color: #5c5750;
+  text-decoration: none;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+}
+.subtle-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1px;
+  background: #a39382;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.subtle-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}`
+  },
+  // Navigation
+  {
+    slug: "nav-underline",
+    title: "Underline Nav Links",
+    description: "Navigation links with animated underline on hover.",
+    category: "Navigation",
+    tags: ["nav", "underline", "hover", "animation"],
+    html: `<nav class="nav-underline">
+  <a href="#">Home</a>
+  <a href="#">About</a>
+  <a href="#">Work</a>
+  <a href="#">Contact</a>
+</nav>`,
+    css: `.nav-underline {
+  display: flex;
+  gap: 24px;
+}
+.nav-underline a {
+  position: relative;
+  text-decoration: none;
+  color: #374151;
+  font-weight: 500;
+  padding: 4px 0;
+}
+.nav-underline a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 2px;
+  background: #3b82f6;
+  transition: width 0.3s ease;
+}
+.nav-underline a:hover::after {
+  width: 100%;
+}`
+  },
+  {
+    slug: "nav-pill-active",
+    title: "Pill Active Nav",
+    description: "Navigation with pill-shaped active indicator.",
+    category: "Navigation",
+    tags: ["nav", "pill", "active", "modern"],
+    html: `<nav class="nav-pill">
+  <a href="#" class="active">Home</a>
+  <a href="#">About</a>
+  <a href="#">Work</a>
+  <a href="#">Contact</a>
+</nav>`,
+    css: `.nav-pill {
+  display: flex;
+  gap: 8px;
+  padding: 6px;
+  background: #f3f4f6;
+  border-radius: 12px;
+}
+.nav-pill a {
+  padding: 8px 16px;
+  text-decoration: none;
+  color: #6b7280;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+.nav-pill a:hover { color: #111; }
+.nav-pill a.active {
+  background: #fff;
+  color: #111;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}`
+  },
+  {
+    slug: "nav-header-sticky",
+    title: "Sticky Header",
+    description: "Fixed header with blur backdrop effect.",
+    category: "Navigation",
+    tags: ["header", "sticky", "blur", "backdrop"],
+    html: `<header class="sticky-header">
+  <div class="logo">Logo</div>
+  <nav>
+    <a href="#">Home</a>
+    <a href="#">About</a>
+    <a href="#">Contact</a>
+  </nav>
+</header>`,
+    css: `.sticky-header {
+  position: sticky;
+  top: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid #e5e7eb;
+  z-index: 100;
+}
+.sticky-header .logo { font-weight: 700; font-size: 18px; }
+.sticky-header nav { display: flex; gap: 24px; }
+.sticky-header nav a { text-decoration: none; color: #374151; font-weight: 500; }
+.sticky-header nav a:hover { color: #111; }`
+  },
+  {
+    slug: "nav-hamburger",
+    title: "Hamburger Menu Icon",
+    description: "Animated hamburger to X toggle.",
+    category: "Navigation",
+    tags: ["hamburger", "menu", "mobile", "toggle"],
+    html: `<button class="hamburger" id="ham">
+  <span></span>
+  <span></span>
+  <span></span>
+</button>`,
+    css: `.hamburger {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.hamburger span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: #111;
+  transition: all 0.3s ease;
+}
+.hamburger.active span:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+.hamburger.active span:nth-child(2) { opacity: 0; }
+.hamburger.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(5px, -5px);
+}`,
+    js: `document.getElementById('ham').addEventListener('click', function() {
+  this.classList.toggle('active');
+});`
+  },
+  {
+    slug: "nav-breadcrumb",
+    title: "Breadcrumb Navigation",
+    description: "Simple breadcrumb with separators.",
+    category: "Navigation",
+    tags: ["breadcrumb", "navigation", "path", "hierarchy"],
+    html: `<nav class="breadcrumb">
+  <a href="#">Home</a>
+  <span>/</span>
+  <a href="#">Portfolio</a>
+  <span>/</span>
+  <span class="current">Project Name</span>
+</nav>`,
+    css: `.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+.breadcrumb a { color: #6b7280; text-decoration: none; }
+.breadcrumb a:hover { color: #3b82f6; }
+.breadcrumb span { color: #9ca3af; }
+.breadcrumb .current { color: #111; font-weight: 500; }`
+  },
+  {
+    slug: "nav-sidebar-minimal",
+    title: "Minimal Sidebar",
+    description: "Clean vertical navigation sidebar.",
+    category: "Navigation",
+    tags: ["sidebar", "vertical", "minimal", "dashboard"],
+    html: `<aside class="sidebar">
+  <div class="sidebar-logo">Brand</div>
+  <nav>
+    <a href="#" class="active">Dashboard</a>
+    <a href="#">Projects</a>
+    <a href="#">Settings</a>
+    <a href="#">Logout</a>
+  </nav>
+</aside>`,
+    css: `.sidebar {
+  width: 200px;
+  padding: 24px 16px;
+  background: #111;
+  border-radius: 12px;
+}
+.sidebar-logo {
+  color: #fff;
+  font-weight: 700;
+  font-size: 18px;
+  margin-bottom: 32px;
+  padding: 0 12px;
+}
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sidebar nav a {
+  padding: 12px;
+  color: #9ca3af;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+.sidebar nav a:hover { color: #fff; background: rgba(255,255,255,0.1); }
+.sidebar nav a.active { color: #fff; background: #3b82f6; }`
+  },
+  {
+    slug: "quiet-nav",
+    title: "Quiet Navigation",
+    description: "Minimal navigation with soft hover states.",
+    category: "Navigation",
+    tags: ["nav", "minimal", "quiet", "butterfly", "elegant"],
+    html: `<nav class="quiet-nav">
+  <a href="#" class="qn-link">Work</a>
+  <a href="#" class="qn-link">About</a>
+  <a href="#" class="qn-link">Contact</a>
+</nav>`,
+    css: `.quiet-nav {
+  display: flex;
+  gap: 32px;
+}
+.qn-link {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: #8b8680;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+.qn-link:hover {
+  color: #1a1a1a;
+}`
+  },
+  // Typography
+  {
+    slug: "text-gradient",
+    title: "Gradient Text",
+    description: "Eye-catching gradient text for headings.",
+    category: "Typography",
+    tags: ["gradient", "heading", "text", "colorful"],
+    html: `<h1 class="gradient-text">Beautiful Gradient</h1>`,
+    css: `.gradient-text {
+  font-size: 48px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #f093fb 50%, #f5576c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}`
+  },
+  {
+    slug: "text-typewriter",
+    title: "Typewriter Effect",
+    description: "Animated typing effect for hero text.",
+    category: "Typography",
+    tags: ["typewriter", "animation", "typing", "hero"],
+    html: `<h1 class="typewriter">Hello, I'm a Developer</h1>`,
+    css: `.typewriter {
+  font-size: 32px;
+  font-weight: 600;
+  overflow: hidden;
+  border-right: 3px solid #3b82f6;
+  white-space: nowrap;
+  animation: typing 3s steps(22) forwards, blink 0.7s step-end infinite;
+  width: 0;
+}
+@keyframes typing { to { width: 100%; } }
+@keyframes blink { 50% { border-color: transparent; } }`
+  },
+  {
+    slug: "text-highlight",
+    title: "Highlight Text",
+    description: "Text with marker highlight effect.",
+    category: "Typography",
+    tags: ["highlight", "marker", "emphasis", "text"],
+    html: `<p>This is <span class="highlight">important text</span> you should notice.</p>`,
+    css: `.highlight {
+  background: linear-gradient(120deg, #fef08a 0%, #fef08a 100%);
+  background-repeat: no-repeat;
+  background-size: 100% 40%;
+  background-position: 0 90%;
+  padding: 0 4px;
+}`
+  },
+  {
+    slug: "text-glitch",
+    title: "Glitch Text",
+    description: "Cyberpunk-style glitch text effect.",
+    category: "Typography",
+    tags: ["glitch", "cyberpunk", "effect", "animation"],
+    html: `<h1 class="glitch" data-text="GLITCH">GLITCH</h1>`,
+    css: `.glitch {
+  position: relative;
+  font-size: 48px;
+  font-weight: 700;
+  color: #fff;
+  background: #111;
+  padding: 20px;
+  text-transform: uppercase;
+}
+.glitch::before, .glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 20px; left: 20px;
+}
+.glitch::before {
+  color: #0ff;
+  animation: glitch-1 0.3s infinite linear alternate-reverse;
+  clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+}
+.glitch::after {
+  color: #f0f;
+  animation: glitch-2 0.3s infinite linear alternate-reverse;
+  clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+}
+@keyframes glitch-1 { 0% { transform: translate(2px); } 100% { transform: translate(-2px); } }
+@keyframes glitch-2 { 0% { transform: translate(-2px); } 100% { transform: translate(2px); } }`
+  },
+  {
+    slug: "text-stroke-outline",
+    title: "Stroke Outline Text",
+    description: "Outlined text with transparent fill.",
+    category: "Typography",
+    tags: ["stroke", "outline", "hollow", "modern"],
+    html: `<h1 class="stroke-text">BOLD</h1>`,
+    css: `.stroke-text {
+  font-size: 72px;
+  font-weight: 900;
+  color: transparent;
+  -webkit-text-stroke: 2px #111;
+  letter-spacing: 8px;
+}
+.stroke-text:hover {
+  color: #111;
+  -webkit-text-stroke: 2px transparent;
+  transition: all 0.3s ease;
+}`
+  },
+  {
+    slug: "text-animate-letters",
+    title: "Letter by Letter",
+    description: "Staggered letter animation on hover.",
+    category: "Typography",
+    tags: ["letters", "stagger", "animation", "hover"],
+    html: `<h1 class="animate-letters">
+  <span>H</span><span>E</span><span>L</span><span>L</span><span>O</span>
+</h1>`,
+    css: `.animate-letters { display: flex; font-size: 48px; font-weight: 700; }
+.animate-letters span { transition: transform 0.3s ease; }
+.animate-letters:hover span { transform: translateY(-10px); }
+.animate-letters span:nth-child(1) { transition-delay: 0s; }
+.animate-letters span:nth-child(2) { transition-delay: 0.05s; }
+.animate-letters span:nth-child(3) { transition-delay: 0.1s; }
+.animate-letters span:nth-child(4) { transition-delay: 0.15s; }
+.animate-letters span:nth-child(5) { transition-delay: 0.2s; }`
+  },
+  {
+    slug: "text-split-reveal",
+    title: "Split Reveal",
+    description: "Text reveals with split animation.",
+    category: "Typography",
+    tags: ["split", "reveal", "animation", "entrance"],
+    html: `<div class="split-reveal">
+  <span class="line">Creative</span>
+  <span class="line">Developer</span>
+</div>`,
+    css: `.split-reveal { overflow: hidden; }
+.split-reveal .line {
+  display: block;
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.1;
+  animation: revealUp 0.8s ease forwards;
+  opacity: 0;
+  transform: translateY(100%);
+}
+.split-reveal .line:nth-child(2) { animation-delay: 0.2s; }
+@keyframes revealUp { to { opacity: 1; transform: translateY(0); } }`
+  },
+  {
+    slug: "whisper-text",
+    title: "Whisper Typography",
+    description: "Delicate heading with subtle letter animation on hover.",
+    category: "Typography",
+    tags: ["typography", "whisper", "subtle", "butterfly", "hover"],
+    html: `<h2 class="whisper">Metamorphosis</h2>`,
+    css: `.whisper {
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: #1a1a1a;
+  cursor: default;
+  transition: letter-spacing 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.whisper:hover {
+  letter-spacing: 0.16em;
+}`
+  },
+  // Cards
+  {
+    slug: "card-hover-lift",
+    title: "Hover Lift Card",
+    description: "Card with subtle lift effect on hover.",
+    category: "Cards",
+    tags: ["card", "hover", "shadow", "lift"],
+    html: `<div class="lift-card">
+  <h3>Card Title</h3>
+  <p>Some description text goes here.</p>
+</div>`,
+    css: `.lift-card {
+  padding: 24px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.lift-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+}
+.lift-card h3 { margin: 0 0 8px; font-size: 18px; font-weight: 600; }
+.lift-card p { margin: 0; font-size: 14px; color: #6b7280; }`
+  },
+  {
+    slug: "card-project",
+    title: "Project Card",
+    description: "Portfolio project card with image and overlay.",
+    category: "Cards",
+    tags: ["project", "portfolio", "image", "overlay"],
+    html: `<div class="project-card">
+  <div class="project-img" style="background:#ddd;height:160px;"></div>
+  <div class="project-overlay"><span>View Project</span></div>
+  <div class="project-info">
+    <h3>Project Name</h3>
+    <p>Web Design</p>
+  </div>
+</div>`,
+    css: `.project-card {
+  position: relative;
+  width: 280px;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.project-img { width: 100%; }
+.project-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 160px;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.project-overlay span {
+  color: #fff;
+  font-weight: 600;
+  border: 2px solid #fff;
+  padding: 8px 20px;
+  border-radius: 6px;
+}
+.project-card:hover .project-overlay { opacity: 1; }
+.project-info { padding: 16px; }
+.project-info h3 { margin: 0 0 4px; font-size: 16px; font-weight: 600; }
+.project-info p { margin: 0; font-size: 14px; color: #6b7280; }`
+  },
+  {
+    slug: "card-testimonial",
+    title: "Testimonial Card",
+    description: "Quote card for testimonials and reviews.",
+    category: "Cards",
+    tags: ["testimonial", "quote", "review", "social"],
+    html: `<div class="testimonial-card">
+  <p class="quote">"This product changed how I work. Highly recommended!"</p>
+  <div class="author">
+    <div class="avatar">JD</div>
+    <div>
+      <div class="name">John Doe</div>
+      <div class="role">CEO, Company</div>
+    </div>
+  </div>
+</div>`,
+    css: `.testimonial-card {
+  padding: 24px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.testimonial-card .quote {
+  margin: 0 0 20px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #374151;
+  font-style: italic;
+}
+.testimonial-card .author { display: flex; align-items: center; gap: 12px; }
+.testimonial-card .avatar {
+  width: 44px; height: 44px;
+  background: #3b82f6;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+}
+.testimonial-card .name { font-weight: 600; }
+.testimonial-card .role { font-size: 14px; color: #6b7280; }`
+  },
+  {
+    slug: "card-pricing",
+    title: "Pricing Card",
+    description: "Clean pricing tier card with features.",
+    category: "Cards",
+    tags: ["pricing", "plan", "features", "saas"],
+    html: `<div class="pricing-card">
+  <div class="plan-name">Pro</div>
+  <div class="price">$29<span>/mo</span></div>
+  <ul class="features">
+    <li>Unlimited projects</li>
+    <li>Priority support</li>
+    <li>Custom domain</li>
+  </ul>
+  <button class="plan-btn">Get Started</button>
+</div>`,
+    css: `.pricing-card {
+  padding: 32px;
+  background: #fff;
+  border: 2px solid #e5e7eb;
+  border-radius: 20px;
+  text-align: center;
+  width: 280px;
+}
+.pricing-card .plan-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #3b82f6;
+  text-transform: uppercase;
+}
+.pricing-card .price { font-size: 48px; font-weight: 700; margin: 16px 0; }
+.pricing-card .price span { font-size: 16px; color: #6b7280; }
+.pricing-card .features { list-style: none; padding: 0; margin: 24px 0; }
+.pricing-card .features li { padding: 8px 0; border-bottom: 1px solid #f3f4f6; }
+.pricing-card .plan-btn {
+  width: 100%;
+  padding: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: #3b82f6;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}`
+  },
+  {
+    slug: "card-profile",
+    title: "Profile Card",
+    description: "User profile card with avatar and socials.",
+    category: "Cards",
+    tags: ["profile", "avatar", "social", "about"],
+    html: `<div class="profile-card">
+  <div class="avatar">AS</div>
+  <h3>Alex Smith</h3>
+  <p>Full-stack Developer</p>
+  <div class="socials">
+    <a href="#">G</a>
+    <a href="#">T</a>
+    <a href="#">L</a>
+  </div>
+</div>`,
+    css: `.profile-card {
+  padding: 32px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  text-align: center;
+}
+.profile-card .avatar {
+  width: 80px; height: 80px;
+  margin: 0 auto 16px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 700;
+}
+.profile-card h3 { margin: 0 0 4px; font-size: 20px; }
+.profile-card p { margin: 0 0 20px; color: #6b7280; }
+.profile-card .socials { display: flex; justify-content: center; gap: 12px; }
+.profile-card .socials a {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  background: #f3f4f6;
+  border-radius: 50%;
+  color: #374151;
+  text-decoration: none;
+}
+.profile-card .socials a:hover { background: #3b82f6; color: #fff; }`
+  },
+  {
+    slug: "card-glass",
+    title: "Glassmorphism Card",
+    description: "Frosted glass effect card.",
+    category: "Cards",
+    tags: ["glass", "blur", "modern", "frosted"],
+    html: `<div class="glass-bg">
+  <div class="glass-card">
+    <h3>Glass Card</h3>
+    <p>Beautiful frosted glass effect with blur backdrop.</p>
+  </div>
+</div>`,
+    css: `.glass-bg {
+  padding: 40px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+}
+.glass-card {
+  padding: 24px;
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 16px;
+  color: #fff;
+}
+.glass-card h3 { margin: 0 0 8px; font-size: 20px; }
+.glass-card p { margin: 0; font-size: 14px; opacity: 0.9; }`
+  },
+  {
+    slug: "card-blog",
+    title: "Blog Post Card",
+    description: "Clean blog post preview card.",
+    category: "Cards",
+    tags: ["blog", "post", "article", "content"],
+    html: `<article class="blog-card">
+  <div class="blog-img" style="background:#e5e7eb;height:140px;border-radius:12px;"></div>
+  <div class="blog-meta">
+    <span>Jan 15, 2025</span>
+    <span>5 min read</span>
+  </div>
+  <h3>How to Build a Personal Website</h3>
+  <p>A complete guide to creating your own portfolio site...</p>
+</article>`,
+    css: `.blog-card { max-width: 320px; }
+.blog-card .blog-img { width: 100%; margin-bottom: 16px; }
+.blog-card .blog-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 12px;
+}
+.blog-card h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.blog-card h3:hover { color: #3b82f6; cursor: pointer; }
+.blog-card p { margin: 0; font-size: 14px; color: #6b7280; line-height: 1.6; }`
+  },
+  {
+    slug: "emergence-card",
+    title: "Emergence Card",
+    description: "Quiet card with gentle lift on hover. Warm neutrals.",
+    category: "Cards",
+    tags: ["card", "emergence", "minimal", "warm", "hover"],
+    html: `<article class="em-card">
+  <span class="em-label">Essay</span>
+  <h3 class="em-title">On Stillness</h3>
+  <p class="em-desc">Finding clarity in the quiet moments between.</p>
+</article>`,
+    css: `.em-card {
+  padding: 32px;
+  background: #faf9f7;
+  border: 1px solid #e8e4df;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.5s ease;
+}
+.em-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.06);
+}
+.em-label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #a39382;
+}
+.em-title {
+  margin: 12px 0 8px;
+  font-size: 20px;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+.em-desc {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #6b6560;
+}`
+  },
+  // Sections
+  {
+    slug: "hero-centered",
+    title: "Centered Hero",
+    description: "Clean centered hero section with CTA.",
+    category: "Sections",
+    tags: ["hero", "centered", "landing", "cta"],
+    html: `<section class="hero-centered">
+  <h1>Build Something Amazing</h1>
+  <p>Create beautiful websites with modern tools and best practices.</p>
+  <button>Get Started</button>
+</section>`,
+    css: `.hero-centered {
+  text-align: center;
+  padding: 80px 20px;
+}
+.hero-centered h1 {
+  margin: 0 0 16px;
+  font-size: 56px;
+  font-weight: 700;
+}
+.hero-centered p {
+  margin: 0 auto 32px;
+  max-width: 600px;
+  font-size: 20px;
+  color: #6b7280;
+}
+.hero-centered button {
+  padding: 14px 32px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  background: #3b82f6;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}`
+  },
+  {
+    slug: "hero-split",
+    title: "Split Hero",
+    description: "Two-column hero with text and image.",
+    category: "Sections",
+    tags: ["hero", "split", "two-column", "image"],
+    html: `<section class="hero-split">
+  <div class="hero-content">
+    <h1>I'm a Creative Developer</h1>
+    <p>Building digital experiences that matter.</p>
+    <button>View Work</button>
+  </div>
+  <div class="hero-image" style="background:#e5e7eb;height:200px;border-radius:16px;"></div>
+</section>`,
+    css: `.hero-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+  padding: 80px 40px;
+}
+.hero-content h1 {
+  margin: 0 0 16px;
+  font-size: 48px;
+  font-weight: 700;
+}
+.hero-content p {
+  margin: 0 0 32px;
+  font-size: 20px;
+  color: #6b7280;
+}
+.hero-content button {
+  padding: 14px 28px;
+  font-weight: 600;
+  color: #fff;
+  background: #111;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}`
+  },
+  {
+    slug: "section-features-grid",
+    title: "Features Grid",
+    description: "Three-column features showcase.",
+    category: "Sections",
+    tags: ["features", "grid", "icons", "benefits"],
+    html: `<section class="features-grid">
+  <div class="feature">
+    <div class="icon">⚡</div>
+    <h3>Fast</h3>
+    <p>Lightning quick performance.</p>
+  </div>
+  <div class="feature">
+    <div class="icon">🔒</div>
+    <h3>Secure</h3>
+    <p>Enterprise-grade security.</p>
+  </div>
+  <div class="feature">
+    <div class="icon">🎨</div>
+    <h3>Beautiful</h3>
+    <p>Stunning modern design.</p>
+  </div>
+</section>`,
+    css: `.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  padding: 60px 40px;
+}
+.feature {
+  padding: 32px;
+  background: #f9fafb;
+  border-radius: 16px;
+  text-align: center;
+}
+.feature .icon { font-size: 40px; margin-bottom: 16px; }
+.feature h3 { margin: 0 0 8px; font-size: 20px; font-weight: 600; }
+.feature p { margin: 0; color: #6b7280; }`
+  },
+  {
+    slug: "section-about-me",
+    title: "About Me Section",
+    description: "Personal introduction with photo.",
+    category: "Sections",
+    tags: ["about", "bio", "personal", "introduction"],
+    html: `<section class="about-me">
+  <div class="about-photo" style="background:#e5e7eb;width:120px;height:120px;border-radius:50%;"></div>
+  <div class="about-content">
+    <h2>About Me</h2>
+    <p>I'm a designer and developer based in San Francisco.</p>
+    <div class="about-stats">
+      <div><strong>5+</strong><span>Years Exp</span></div>
+      <div><strong>50+</strong><span>Projects</span></div>
+      <div><strong>30+</strong><span>Clients</span></div>
+    </div>
+  </div>
+</section>`,
+    css: `.about-me {
+  display: flex;
+  align-items: center;
+  gap: 60px;
+  padding: 80px 40px;
+}
+.about-content h2 { margin: 0 0 16px; font-size: 36px; font-weight: 700; }
+.about-content p { margin: 0 0 24px; color: #6b7280; line-height: 1.7; }
+.about-stats { display: flex; gap: 40px; }
+.about-stats strong { display: block; font-size: 32px; color: #3b82f6; }
+.about-stats span { font-size: 14px; color: #6b7280; }`
+  },
+  {
+    slug: "section-cta-banner",
+    title: "CTA Banner",
+    description: "Full-width call-to-action banner.",
+    category: "Sections",
+    tags: ["cta", "banner", "action", "conversion"],
+    html: `<section class="cta-banner">
+  <h2>Ready to start your project?</h2>
+  <p>Let's work together to bring your ideas to life.</p>
+  <button>Get in Touch</button>
+</section>`,
+    css: `.cta-banner {
+  padding: 60px 40px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 24px;
+  text-align: center;
+  color: #fff;
+}
+.cta-banner h2 { margin: 0 0 12px; font-size: 36px; font-weight: 700; }
+.cta-banner p { margin: 0 0 32px; font-size: 18px; opacity: 0.9; }
+.cta-banner button {
+  padding: 14px 32px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #667eea;
+  background: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}`
+  },
+  {
+    slug: "section-contact-form",
+    title: "Contact Form",
+    description: "Simple contact form layout.",
+    category: "Sections",
+    tags: ["contact", "form", "input", "email"],
+    html: `<section class="contact-form">
+  <h2>Get in Touch</h2>
+  <form>
+    <input type="text" placeholder="Your Name">
+    <input type="email" placeholder="Email Address">
+    <textarea placeholder="Your Message" rows="4"></textarea>
+    <button type="submit">Send Message</button>
+  </form>
+</section>`,
+    css: `.contact-form { max-width: 500px; padding: 40px; }
+.contact-form h2 { margin: 0 0 24px; font-size: 32px; font-weight: 700; }
+.contact-form form { display: flex; flex-direction: column; gap: 16px; }
+.contact-form input, .contact-form textarea {
+  padding: 14px 18px;
+  font-size: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  outline: none;
+}
+.contact-form input:focus, .contact-form textarea:focus { border-color: #3b82f6; }
+.contact-form button {
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  background: #3b82f6;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}`
+  },
+  {
+    slug: "section-footer",
+    title: "Simple Footer",
+    description: "Clean footer with links and copyright.",
+    category: "Sections",
+    tags: ["footer", "links", "copyright", "bottom"],
+    html: `<footer class="simple-footer">
+  <div class="footer-brand">Brand</div>
+  <nav class="footer-links">
+    <a href="#">Home</a>
+    <a href="#">About</a>
+    <a href="#">Work</a>
+    <a href="#">Contact</a>
+  </nav>
+  <div class="footer-copy">© 2025 Your Name. All rights reserved.</div>
+</footer>`,
+    css: `.simple-footer {
+  padding: 60px 40px;
+  border-top: 1px solid #e5e7eb;
+  text-align: center;
+}
+.footer-brand { font-size: 24px; font-weight: 700; margin-bottom: 20px; }
+.footer-links { display: flex; justify-content: center; gap: 32px; margin-bottom: 24px; }
+.footer-links a { color: #6b7280; text-decoration: none; }
+.footer-links a:hover { color: #111; }
+.footer-copy { font-size: 14px; color: #9ca3af; }`
+  },
+  {
+    slug: "section-skills",
+    title: "Skills Section",
+    description: "Skills display with progress bars.",
+    category: "Sections",
+    tags: ["skills", "progress", "abilities", "expertise"],
+    html: `<section class="skills-section">
+  <h2>My Skills</h2>
+  <div class="skill">
+    <div class="skill-header"><span>JavaScript</span><span>90%</span></div>
+    <div class="skill-bar"><div class="skill-progress" style="width:90%"></div></div>
+  </div>
+  <div class="skill">
+    <div class="skill-header"><span>React</span><span>85%</span></div>
+    <div class="skill-bar"><div class="skill-progress" style="width:85%"></div></div>
+  </div>
+</section>`,
+    css: `.skills-section { max-width: 500px; padding: 40px; }
+.skills-section h2 { margin: 0 0 32px; font-size: 32px; font-weight: 700; }
+.skill { margin-bottom: 20px; }
+.skill-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 15px; font-weight: 500; }
+.skill-bar { height: 10px; background: #e5e7eb; border-radius: 5px; overflow: hidden; }
+.skill-progress { height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); border-radius: 5px; }`
+  },
+  {
+    slug: "calm-hero",
+    title: "Calm Hero",
+    description: "Serene hero section. Geometric type, generous whitespace.",
+    category: "Sections",
+    tags: ["hero", "calm", "minimal", "butterfly", "emergence"],
+    html: `<section class="calm-hero">
+  <p class="calm-eyebrow">Portfolio 2025</p>
+  <h1 class="calm-title">Design with<br>intention</h1>
+  <p class="calm-sub">Creating thoughtful digital experiences.</p>
+</section>`,
+    css: `.calm-hero {
+  padding: 120px 24px;
+  text-align: center;
+  background: #faf9f7;
+}
+.calm-eyebrow {
+  margin: 0 0 24px;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #a39382;
+}
+.calm-title {
+  margin: 0 0 24px;
+  font-size: 56px;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #1a1a1a;
+}
+.calm-sub {
+  margin: 0;
+  font-size: 17px;
+  color: #6b6560;
+}`
+  },
+  // Motion
+  {
+    slug: "fade-in-up",
+    title: "Fade In Up",
+    description: "Element fades in while moving up on load.",
+    category: "Motion",
+    tags: ["animation", "fade", "entrance", "scroll"],
+    html: `<div class="fade-in-up">
+  <h2>Hello World</h2>
+  <p>This content fades in from below.</p>
+</div>`,
+    css: `.fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+  opacity: 0;
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in-up h2 { margin: 0 0 8px; font-size: 24px; font-weight: 600; }
+.fade-in-up p { margin: 0; color: #6b7280; }`
+  },
+  {
+    slug: "pulse-dot",
+    title: "Pulse Dot",
+    description: "Animated pulsing dot for status indicators.",
+    category: "Motion",
+    tags: ["pulse", "dot", "status", "indicator"],
+    html: `<span class="pulse-dot"></span>`,
+    css: `.pulse-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background: #10b981;
+  border-radius: 50%;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.7; }
+}`
+  },
+  {
+    slug: "motion-bounce",
+    title: "Bounce Animation",
+    description: "Playful bounce effect for attention.",
+    category: "Motion",
+    tags: ["bounce", "attention", "playful", "loop"],
+    html: `<div class="bounce-box">Bounce!</div>`,
+    css: `.bounce-box {
+  display: inline-block;
+  padding: 16px 32px;
+  background: #3b82f6;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 12px;
+  animation: bounce 1s infinite;
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}`
+  },
+  {
+    slug: "motion-scale-hover",
+    title: "Scale on Hover",
+    description: "Smooth scale transform on hover.",
+    category: "Motion",
+    tags: ["scale", "hover", "transform", "zoom"],
+    html: `<div class="scale-hover">Hover me</div>`,
+    css: `.scale-hover {
+  display: inline-block;
+  padding: 20px 40px;
+  background: #f3f4f6;
+  border-radius: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+.scale-hover:hover {
+  transform: scale(1.1);
+}`
+  },
+  {
+    slug: "motion-rotate-hover",
+    title: "Rotate on Hover",
+    description: "Smooth rotation effect on hover.",
+    category: "Motion",
+    tags: ["rotate", "hover", "spin", "icon"],
+    html: `<div class="rotate-hover">⚙️</div>`,
+    css: `.rotate-hover {
+  display: inline-block;
+  font-size: 48px;
+  cursor: pointer;
+  transition: transform 0.5s ease;
+}
+.rotate-hover:hover {
+  transform: rotate(180deg);
+}`
+  },
+  {
+    slug: "motion-shake",
+    title: "Shake Animation",
+    description: "Attention-grabbing shake effect.",
+    category: "Motion",
+    tags: ["shake", "attention", "error", "alert"],
+    html: `<button class="shake-btn">Shake me!</button>`,
+    css: `.shake-btn {
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  background: #ef4444;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.shake-btn:hover {
+  animation: shake 0.5s ease-in-out;
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
+}`
+  },
+  {
+    slug: "motion-spinner",
+    title: "Loading Spinner",
+    description: "Simple rotating loading spinner.",
+    category: "Motion",
+    tags: ["loading", "spinner", "rotate", "wait"],
+    html: `<div class="spinner"></div>`,
+    css: `.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}`
+  },
+  {
+    slug: "motion-skeleton",
+    title: "Skeleton Loading",
+    description: "Shimmer skeleton placeholder.",
+    category: "Motion",
+    tags: ["skeleton", "loading", "placeholder", "shimmer"],
+    html: `<div class="skeleton-card">
+  <div class="skeleton skeleton-img"></div>
+  <div class="skeleton skeleton-title"></div>
+  <div class="skeleton skeleton-text"></div>
+</div>`,
+    css: `.skeleton-card { width: 280px; padding: 20px; background: #fff; border-radius: 16px; }
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+.skeleton-img { height: 160px; margin-bottom: 16px; }
+.skeleton-title { height: 24px; width: 80%; margin-bottom: 12px; }
+.skeleton-text { height: 16px; width: 60%; }
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}`
+  },
+  {
+    slug: "motion-stagger-list",
+    title: "Staggered List",
+    description: "List items appear with staggered delay.",
+    category: "Motion",
+    tags: ["stagger", "list", "delay", "entrance"],
+    html: `<ul class="stagger-list">
+  <li>Item One</li>
+  <li>Item Two</li>
+  <li>Item Three</li>
+  <li>Item Four</li>
+</ul>`,
+    css: `.stagger-list { list-style: none; padding: 0; margin: 0; }
+.stagger-list li {
+  padding: 16px 20px;
+  margin-bottom: 8px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  opacity: 0;
+  animation: fadeIn 0.4s ease forwards;
+}
+.stagger-list li:nth-child(1) { animation-delay: 0s; }
+.stagger-list li:nth-child(2) { animation-delay: 0.1s; }
+.stagger-list li:nth-child(3) { animation-delay: 0.2s; }
+.stagger-list li:nth-child(4) { animation-delay: 0.3s; }
+@keyframes fadeIn { to { opacity: 1; } }`
+  },
+  {
+    slug: "motion-flip-card",
+    title: "Flip Card",
+    description: "Card flips to reveal back on hover.",
+    category: "Motion",
+    tags: ["flip", "3d", "card", "reveal"],
+    html: `<div class="flip-card">
+  <div class="flip-inner">
+    <div class="flip-front">Front</div>
+    <div class="flip-back">Back</div>
+  </div>
+</div>`,
+    css: `.flip-card { width: 200px; height: 150px; perspective: 1000px; }
+.flip-inner {
+  position: relative;
+  width: 100%; height: 100%;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+.flip-card:hover .flip-inner { transform: rotateY(180deg); }
+.flip-front, .flip-back {
+  position: absolute;
+  width: 100%; height: 100%;
+  backface-visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  font-weight: 600;
+}
+.flip-front { background: #3b82f6; color: #fff; }
+.flip-back { background: #10b981; color: #fff; transform: rotateY(180deg); }`
+  },
+  {
+    slug: "emergence-reveal",
+    title: "Emergence Reveal",
+    description: "Content gracefully emerges from stillness.",
+    category: "Motion",
+    tags: ["emergence", "butterfly", "calm", "reveal", "minimal"],
+    html: `<div class="emergence">
+  <span class="emergence-text">Emerge</span>
+</div>`,
+    css: `.emergence { overflow: hidden; }
+.emergence-text {
+  display: inline-block;
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: #1a1a1a;
+  opacity: 0;
+  transform: translateY(100%);
+  animation: emerge 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes emerge {
+  to { opacity: 1; transform: translateY(0); }
+}`
+  }
+];
+
+// Categories
+const CATEGORIES = ["Buttons & CTAs", "Navigation", "Typography", "Cards", "Sections", "Motion"];
+
+// State
+let activeCategory = "all";
+let searchQuery = "";
+
+// DOM Elements
+const filterNav = document.getElementById('filterNav');
+const componentsGrid = document.getElementById('componentsGrid');
+const emptyState = document.getElementById('emptyState');
+const searchInput = document.getElementById('searchInput');
+const detailView = document.getElementById('detailView');
+
+// Initialize
+function init() {
+  renderFilters();
+  renderCards();
+  bindEvents();
+}
+
+// Render filter buttons
+function renderFilters() {
+  const allCount = COMPONENTS.length;
+  let html = `<button class="filter-btn active" data-filter="all">All (${allCount})</button>`;
+
+  CATEGORIES.forEach(cat => {
+    const count = COMPONENTS.filter(c => c.category === cat).length;
+    html += `<button class="filter-btn" data-filter="${cat}">${cat} (${count})</button>`;
+  });
+
+  filterNav.innerHTML = html;
+}
+
+// Render component cards
+function renderCards() {
+  const filtered = COMPONENTS.filter(c => {
+    const matchCategory = activeCategory === "all" || c.category === activeCategory;
+    const matchSearch = searchQuery === "" ||
+      c.title.toLowerCase().includes(searchQuery) ||
+      c.description.toLowerCase().includes(searchQuery) ||
+      c.tags.some(t => t.toLowerCase().includes(searchQuery));
+    return matchCategory && matchSearch;
+  });
+
+  if (filtered.length === 0) {
+    componentsGrid.innerHTML = "";
+    emptyState.style.display = "block";
+    return;
+  }
+
+  emptyState.style.display = "none";
+  componentsGrid.innerHTML = filtered.map(c => `
+    <div class="component-card" data-slug="${c.slug}">
+      <h3 class="card-title">${c.title}</h3>
+      <p class="card-description">${c.description}</p>
+      <div class="card-tags">
+        <span class="tag">${c.category}</span>
+        ${c.tags.slice(0, 2).map(t => `<span class="tag">${t}</span>`).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+// Bind events
+function bindEvents() {
+  // Filter buttons
+  filterNav.addEventListener('click', e => {
+    if (e.target.classList.contains('filter-btn')) {
+      filterNav.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
+      activeCategory = e.target.dataset.filter;
+      renderCards();
+    }
+  });
+
+  // Search
+  searchInput.addEventListener('input', e => {
+    searchQuery = e.target.value.toLowerCase().trim();
+    renderCards();
+  });
+
+  // Card click
+  componentsGrid.addEventListener('click', e => {
+    const card = e.target.closest('.component-card');
+    if (card) showDetail(card.dataset.slug);
+  });
+
+  // Escape key
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') hideDetail();
+  });
+}
+
+// Show detail view
+function showDetail(slug) {
+  const c = COMPONENTS.find(x => x.slug === slug);
+  if (!c) return;
+
+  document.getElementById('detailTitle').textContent = c.title;
+  document.getElementById('detailDescription').textContent = c.description;
+  document.getElementById('detailTags').innerHTML =
+    `<span class="detail-tag">${c.category}</span>` +
+    c.tags.map(t => `<span class="detail-tag">${t}</span>`).join('');
+
+  // Preview iframe
+  const previewHtml = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><style>
+body { font-family: system-ui, sans-serif; padding: 20px; display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 40px); margin: 0; }
+${c.css}
+</style></head><body>${c.html}${c.js ? `<script>${c.js}<\/script>` : ''}</body></html>`;
+
+  document.getElementById('previewContent').innerHTML =
+    `<iframe title="preview" srcdoc="${previewHtml.replace(/"/g, '&quot;')}"></iframe>`;
+
+  // Code section
+  let codeHtml = `<div class="section-header">Code (copy)</div>`;
+  codeHtml += renderCodeBlock('HTML', c.html, 'html-code', 'markup');
+  codeHtml += renderCodeBlock('CSS', c.css, 'css-code', 'css');
+  if (c.js) codeHtml += renderCodeBlock('JS', c.js, 'js-code', 'javascript');
+  document.getElementById('codeSection').innerHTML = codeHtml;
+
+  // Apply syntax highlighting
+  Prism.highlightAll();
+
+  detailView.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function renderCodeBlock(label, code, id, lang) {
+  const escaped = code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return `<div class="code-block">
+    <div class="code-header">
+      <span class="code-label">${label}</span>
+      <button class="copy-btn" onclick="copyCode('${id}')">Copy</button>
+    </div>
+    <div class="code-content">
+      <pre id="${id}"><code class="language-${lang}">${escaped}</code></pre>
+    </div>
+  </div>`;
+}
+
+// Hide detail view
+function hideDetail() {
+  detailView.classList.remove('active');
+  document.body.style.overflow = 'auto';
+}
+
+// Copy code
+function copyCode(elementId) {
+  const el = document.getElementById(elementId);
+  const code = el.textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = event.target;
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+// Start
+init();
+    </script>
+</body>
+</html>
